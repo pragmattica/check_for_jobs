@@ -32,7 +32,13 @@ def main():
     pcontrol.value = PASSWORD
 
     login_response = br.submit()
-    print login_response.read()
+    login_response_html = login_response.read()
+
+    # Get the session cookie
+    session_id = None
+    for c in br._ua_handlers['_cookies'].cookiejar:
+        if c.name == "ASP.NET_SessionId":
+            session_id = c.value
 
 
 if __name__ == "__main__":
