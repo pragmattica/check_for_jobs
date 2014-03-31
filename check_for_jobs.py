@@ -7,6 +7,9 @@ SITE_URL = ""
 
 
 def main():
+    if SITE_URL == "":
+        print "Need to enter a SITE_URL to use this script"
+
     br = mechanize.Browser()
     br.set_handle_robots(False)
     br.set_handle_refresh(False)
