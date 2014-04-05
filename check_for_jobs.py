@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import mechanize
+import mechanize, time
 
 USERNAME = ""
 PASSWORD = ""
@@ -35,7 +35,9 @@ def main():
         print "No jobs found"
     else:
         print "JOBS AVAILABLE!!!!!!!!!!!!!!!!!!"
-
+        t = str(time.time())
+        with open(t + ".log", 'w') as fout:
+            fout.write(avail_response.read())
 
 if __name__ == "__main__":
     main()
