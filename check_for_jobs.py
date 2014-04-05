@@ -14,6 +14,7 @@ def main():
     br.set_handle_robots(False)
     br.set_handle_refresh(False)
 
+    # Open the site and log in
     response = br.open(SITE_URL + "/wc2/default.aspx")
 
     br.select_form("WCHtmlForm1")
@@ -26,6 +27,16 @@ def main():
 
     login_response = br.submit()
     login_response_html = login_response.read()
+
+    # Get the three frames that make up the page (two of these
+    # frames won't be examined, but they are retrieved anyway just
+    # to make this script look more like a web-browser and less like
+    # a bot)
+    title_response = br.open(SITE_URL + "/wc2/title.aspx")
+    title_response_html = title_response.read()
+
+    message_response = br.open(SITE_URL + "/wc2/common/Message.aspx")
+    message_response_html = message_response.read()
 
     menu_response = br.open(SITE_URL + "/wc2/sub/SubOptions.aspx")
     menu_response_html = menu_response.read()
