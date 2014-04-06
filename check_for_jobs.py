@@ -1,9 +1,10 @@
 #!/usr/bin/python
-import mechanize, time
+import mechanize, time, subprocess
 
 USERNAME = ""
 PASSWORD = ""
 SITE_URL = ""
+TO_NOTIFY = [""]
 
 
 def main():
@@ -49,6 +50,9 @@ def main():
         t = str(time.time())
         with open(t + ".log", 'w') as fout:
             fout.write(avail_response.read())
+        for n in TO_NOTIFY:
+            params = ["ssh", n, "osascript -e 'display notification \"Jobs are available\" with title \"check_for_jobs\"'"]
+            subprocess.call(params)
 
     # Now that we've finished using the web application, it seems polite
     # to log out
