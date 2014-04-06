@@ -50,5 +50,11 @@ def main():
         with open(t + ".log", 'w') as fout:
             fout.write(avail_response.read())
 
+    # Now that we've finished using the web application, it seems polite
+    # to log out
+    logout_response = br.open(SITE_URL + "/wc2/Login/LOGOUT.aspx")
+    logout_response_html = logout_response.read()
+
+
 if __name__ == "__main__":
     main()
