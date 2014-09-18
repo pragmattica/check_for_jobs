@@ -55,7 +55,7 @@ def main():
 
         # Attempt to count the number of available jobs
         num_jobs = -1
-        soup = BeautifulSoup(avail_response)
+        soup = BeautifulSoup(avail_response.read())
         tables = soup.find_all('table')
         for t in tables:
             data = t.find_all('td')
