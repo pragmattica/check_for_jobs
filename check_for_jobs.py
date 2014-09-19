@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import mechanize, time, subprocess
+import mechanize, datetime, time, subprocess
 
 from bs4 import BeautifulSoup
 
@@ -46,30 +46,33 @@ def main():
 
     avail_response = br.open(SITE_URL + "/wc2/sub/SubAvailableJobs.aspx")
     if "No jobs available at this time." in avail_response.read():
-        print "No jobs found"
+        print str(datetime.datetime.now()) + "No jobs found"
     else:
-        print "JOBS AVAILABLE!!!!!!!!!!!!!!!!!!"
+        print str(datetime.datetime.now()) + "JOBS AVAILABLE!!!!!!!!!!!!!!!!!!"
         t = str(time.time())
         with open(t + ".log", 'w') as fout:
             fout.write(avail_response.read())
 
         # Attempt to count the number of available jobs
-        num_jobs = -1
-        soup = BeautifulSoup(avail_response.read())
-        tables = soup.find_all('table')
-        for t in tables:
-            data = t.find_all('td')
-            if data[0].small.center.b.text == u'Job ID' and data[1].small.center.b.text == u'Employee': # This is the one we want
-                rows = t.find_all('tr')
-                num_rows = len(rows)
-                num_jobs = num_rows - 1
+        try:
+            num_jobs = -1
+            soup = BeautifulSoup(avail_response.read())
+            tables = soup.find_all('table')
+            for t in tables:
+                data = t.find_all('td')
+                if data[0].small.center.b.text == u'Job ID' and data[1].small.center.b.text == u'Employee': # This is the one we want
+                    rows = t.find_all('tr')
+                    num_rows = len(rows)
+                    num_jobs = num_rows - 1
 
-        for n in TO_NOTIFY:
-            job_str = "job is"
-            if num_jobs > 1:
-                job_str = "jobs are"
-            params = ["ssh", n, "osascript -e 'display notification \"" + str(num_jobs) + " " + job_str + " available\" with title \"check_for_jobs\"'"]
-            subprocess.call(params)
+            for n in TO_NOTIFY:
+                job_str = "job is"
+                if num_jobs > 1:
+                    job_str = "jobs are"
+                params = ["ssh", n, "osascript -e 'display notification \"" + str(num_jobs) + " " + job_str + " available\" with title \"check_for_jobs\"'"]
+                subprocess.call(params)
+        except Exception, e:
+            print str(datetime.datetime.now()) + " Exception occurred: " + str(e)
 
     # Now that we've finished using the web application, it seems polite
     # to log out
