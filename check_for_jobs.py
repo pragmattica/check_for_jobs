@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import mechanize, datetime, time, subprocess
+import os, mechanize, datetime, time, subprocess
 
 from bs4 import BeautifulSoup
 
@@ -8,6 +8,11 @@ PASSWORD = ""
 SITE_URL = ""
 TO_NOTIFY = [""]
 
+
+def notify_all(msg, title):
+    for n in TO_NOTIFY:
+        params = ["ssh", n, "osascript -e 'display notification \"" + msg + "\" with title \"" + title + "\"'"]
+        subprocess.call(params)
 
 def main():
     if SITE_URL == "":
@@ -46,16 +51,21 @@ def main():
 
     avail_response = br.open(SITE_URL + "/wc2/sub/SubAvailableJobs.aspx")
     avail_response_html = avail_response.read()
+
+    if os.path.isfile("/tmp/check_for_jobs_send_alive.tmp"):
+        notify_all("The check_for_jobs script is active!", "check_for_jobs")
+        os.remove("/tmp/check_for_jobs_send_alive.tmp")
+
     if "No jobs available at this time." in avail_response_html:
-        print str(datetime.datetime.now()) + "No jobs found"
+        print str(datetime.datetime.now()) + " No jobs found"
     else:
-        print str(datetime.datetime.now()) + "JOBS AVAILABLE!!!!!!!!!!!!!!!!!!"
+        print str(datetime.datetime.now()) + " JOBS AVAILABLE!!!!!!!!!!!!!!!!!!"
         t = str(time.time())
         with open(t + ".log", 'w') as fout:
             fout.write(avail_response_html)
 
-        # Attempt to count the number of available jobs
         try:
+            # Attempt to count the number of available jobs
             num_jobs = -1
             soup = BeautifulSoup(avail_response_html)
             tables = soup.find_all('table')
@@ -66,12 +76,14 @@ def main():
                     num_rows = len(rows)
                     num_jobs = num_rows - 1
 
-            for n in TO_NOTIFY:
-                job_str = "job is"
-                if num_jobs > 1:
-                    job_str = "jobs are"
-                params = ["ssh", n, "osascript -e 'display notification \"" + str(num_jobs) + " " + job_str + " available\" with title \"check_for_jobs\"'"]
-                subprocess.call(params)
+            # Send notifications to OS X computers via ssh
+            plurality_str = "job is"
+            if num_jobs > 1:
+                plurality_str = "jobs are"
+            msg = str(num_jobs) + " " + plurality_str + " available"
+            title = "check_for_jobs"
+            notify_all(msg, title)
+
         except Exception, e:
             print str(datetime.datetime.now()) + " Exception occurred: " + str(e)
 
