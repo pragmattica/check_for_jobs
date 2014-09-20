@@ -45,18 +45,19 @@ def main():
     menu_response_html = menu_response.read()
 
     avail_response = br.open(SITE_URL + "/wc2/sub/SubAvailableJobs.aspx")
-    if "No jobs available at this time." in avail_response.read():
+    avail_response_html = avail_response.read()
+    if "No jobs available at this time." in avail_response_html:
         print str(datetime.datetime.now()) + "No jobs found"
     else:
         print str(datetime.datetime.now()) + "JOBS AVAILABLE!!!!!!!!!!!!!!!!!!"
         t = str(time.time())
         with open(t + ".log", 'w') as fout:
-            fout.write(avail_response.read())
+            fout.write(avail_response_html)
 
         # Attempt to count the number of available jobs
         try:
             num_jobs = -1
-            soup = BeautifulSoup(avail_response.read())
+            soup = BeautifulSoup(avail_response_html)
             tables = soup.find_all('table')
             for t in tables:
                 data = t.find_all('td')
