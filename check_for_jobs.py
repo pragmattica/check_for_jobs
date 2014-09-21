@@ -55,6 +55,7 @@ def main():
     if os.path.isfile("/tmp/check_for_jobs_send_alive.tmp"):
         notify_all("The check_for_jobs script is active!", "check_for_jobs")
         os.remove("/tmp/check_for_jobs_send_alive.tmp")
+        print str(datetime.datetime.now()) + " Sent notice that check_for_jobs is active"
 
     if "No jobs available at this time." in avail_response_html:
         print str(datetime.datetime.now()) + " No jobs found"
