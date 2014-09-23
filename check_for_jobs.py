@@ -11,7 +11,7 @@ TO_NOTIFY = [""]
 
 def notify_all(msg, title):
     for n in TO_NOTIFY:
-        params = ["ssh", n, "osascript -e 'display notification \"" + msg + "\" with title \"" + title + "\"'"]
+        params = ["ssh", n, "osascript -e 'display notification \"" + msg + "\" with title \"" + title + "\" sound name \"Submarine\"'"]
         subprocess.call(params)
 
 def main():
