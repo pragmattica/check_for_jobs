@@ -72,7 +72,7 @@ def main():
             tables = soup.find_all('table')
             for t in tables:
                 data = t.find_all('td')
-                if data[0].small.center.b.text == u'Job ID' and data[1].small.center.b.text == u'Employee': # This is the one we want
+                if data[0].text == u'Job ID' and data[1].text == u'Employee': # This is the one we want
                     rows = t.find_all('tr')
                     num_rows = len(rows)
                     num_jobs = num_rows - 1
