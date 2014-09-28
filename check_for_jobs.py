@@ -9,6 +9,34 @@ SITE_URL = ""
 TO_NOTIFY = [""]
 
 
+# Parses the jobs list and returns a tuple containing a list of requested jobs and a second list
+# of available jobs.
+def parse_jobs(avail_response_html):
+    # Figure out if the table of jobs is split into two sections
+    soup = BeautifulSoup(avail_response_html)
+    tables = soup.find_all('table')
+    for t in tables:
+        data = t.find_all('td')
+        if data[0].text == u'Job ID' and data[1].text == u'Employee': # This is the table listing the jobs
+            rows = [c for c in t.contents if str(c).isspace() == False]
+            if rows[1].text == u'You have been requested for the following jobs': # Two sections
+                in_request_section = True
+                request_list, avail_list = [], []
+                for r in rows[2:]:
+                    if in_request_section == True and len(r.find_all('td')) == 5:
+                        request_list.append(r.find_all('td')[4])
+                    elif in_request_section == True and len(r.find_all('td')) != 5:
+                        in_request_section = False
+                    elif in_request_section == False and len(r.find_all('td')) == 5:
+                        avail_list.append(r.find_all('td')[4])
+                return (request_list, avail_list)
+
+            else: # Single section
+                avail_list = []
+                for r in rows[1:]:
+                    avail_list.append(r.find_all('td')[4])
+                return ([], avail_list)
+
 def notify_all(msg, title):
     for n in TO_NOTIFY:
         params = ["ssh", n, "osascript -e 'display notification \"" + msg + "\" with title \"" + title + "\" sound name \"Submarine\"'"]
@@ -67,22 +95,15 @@ def main():
             fout.write(avail_response_html)
 
         try:
-            # Attempt to count the number of available jobs
-            num_jobs = -1
-            soup = BeautifulSoup(avail_response_html)
-            tables = soup.find_all('table')
-            for t in tables:
-                data = t.find_all('td')
-                if data[0].text == u'Job ID' and data[1].text == u'Employee': # This is the one we want
-                    rows = t.find_all('tr')
-                    num_rows = len(rows)
-                    num_jobs = num_rows - 1
+            # Retrieve the listed jobs
+            (request_jobs, avail_jobs) = parse_jobs(avail_response_html)
+            num_jobs = len(request_jobs) + len(avail_jobs)
 
             # Send notifications to OS X computers via ssh
             plurality_str = "job is"
             if num_jobs > 1:
                 plurality_str = "jobs are"
-            msg = str(num_jobs) + " " + plurality_str + " available"
+            msg = str(num_jobs) + " " + plurality_str + " listed (" + str(len(request_jobs)) + " requested; " + str(len(avail_jobs)) + " available)")
             title = "check_for_jobs"
             notify_all(msg, title)
 
