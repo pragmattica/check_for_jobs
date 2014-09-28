@@ -103,7 +103,7 @@ def main():
             plurality_str = "job is"
             if num_jobs > 1:
                 plurality_str = "jobs are"
-            msg = str(num_jobs) + " " + plurality_str + " listed (" + str(len(request_jobs)) + " requested; " + str(len(avail_jobs)) + " available)")
+            msg = str(num_jobs) + " " + plurality_str + " listed (" + str(len(request_jobs)) + " requested; " + str(len(avail_jobs)) + " available)"
             title = "check_for_jobs"
             notify_all(msg, title)
 
