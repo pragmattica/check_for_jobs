@@ -13,6 +13,7 @@ def notify_all(msg, title):
     for n in TO_NOTIFY:
         params = ["ssh", n, "osascript -e 'display notification \"" + msg + "\" with title \"" + title + "\" sound name \"Submarine\"'"]
         subprocess.call(params)
+    print str(datetime.datetime.now()) + " Sent notification '" + msg + "' with title '" + title + "'"
 
 def main():
     if SITE_URL == "":
