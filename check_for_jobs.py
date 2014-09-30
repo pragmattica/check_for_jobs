@@ -14,12 +14,21 @@ class Job(object):
     def __init__(self, requested, job_id_str, desc_str):
         self.requested = requested
         self.job_id_str = job_id_str
+        self.job_id = self.parse_job_id_str(self.job_id_str)
         self.desc_str = desc_str
         self.start_datetime, self.end_datetime = self.parse_desc_str(self.desc_str)
         self.duration = self.end_datetime - self.start_datetime
         self.num_hours = self.duration.total_seconds() // 3600
         self.num_minutes = (self.duration.total_seconds() - (self.num_hours * 3600)) // 60
         self.duration_str = str(int(self.num_hours)).zfill(2) + ":" + str(int(self.num_minutes)).zfill(2)
+
+    def parse_job_id_str(self, job_id_str):
+        start_str = "if(CanSubmitSelection){ CanSubmitSelection=false; SubAvailSelect_onclick("
+        end_str = ");}"
+        assert(job_id_str.startswith(start_str))
+        assert(job_id_str.endswith(end_str))
+        job_number_str = job_id_str[len(start_str):-len(end_str)]
+        return int(job_number_str)
 
     def parse_special_date_time(self, date_str, time_str):
         month_str, day_str, year_str = date_str.split('/')
@@ -59,19 +68,19 @@ def parse_jobs(avail_response_html):
                 request_list, avail_list = [], []
                 for r in rows[2:]:
                     if in_request_section == True and len(r.find_all('td')) == 5:
-                        new_req_job = Job(True, 0, r.find_all('td')[4].text)
+                        new_req_job = Job(True, r.find_all('td')[0].input['onclick'], r.find_all('td')[4].text)
                         request_list.append(new_req_job)
                     elif in_request_section == True and len(r.find_all('td')) != 5:
                         in_request_section = False
                     elif in_request_section == False and len(r.find_all('td')) == 5:
-                        new_avail_job = Job(False, 0, r.find_all('td')[4].text)
+                        new_avail_job = Job(False, r.find_all('td')[0].input['onclick'], r.find_all('td')[4].text)
                         avail_list.append(new_avail_job)
                 return (request_list, avail_list)
 
             else: # Single section
                 avail_list = []
                 for r in rows[1:]:
-                    new_avail_job = Job(False, 0, r.find_all('td')[4].text)
+                    new_avail_job = Job(False, r.find_all('td')[0].input['onclick'], r.find_all('td')[4].text)
                     avail_list.append(new_avail_job)
                 return ([], avail_list)
 
