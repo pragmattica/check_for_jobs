@@ -9,6 +9,8 @@ PASSWORD = ""
 SITE_URL = ""
 TO_NOTIFY = [""]
 
+FULL_DAY_JOB_HOURS = 5 # To qualify as a 'full-day' job, the duration must be AT LEAST this many hours
+
 
 class Job(object):
     def __init__(self, requested, job_id_str, desc_str):
@@ -145,12 +147,20 @@ def main():
             # Retrieve the listed jobs
             (request_jobs, avail_jobs) = parse_jobs(avail_response_html)
             num_jobs = len(request_jobs) + len(avail_jobs)
+            job_info_list = []
+            for job_obj in request_jobs:
+                job_len = "full day" if job_obj.num_hours >= FULL_DAY_JOB_HOURS else "half day"
+                job_info_list.append("job ID " + str(job_obj.job_id) + ": " + job_len + " requested")
+            for job_obj in avail_jobs:
+                job_len = "full day" if job_obj.num_hours >= FULL_DAY_JOB_HOURS else "half day"
+                job_info_list.append("job ID " + str(job_obj.job_id) + ": " + job_len)
+            job_info_str = ",".join(job_info_list)
 
             # Send notifications to OS X computers via ssh
             plurality_str = "job is"
             if num_jobs > 1:
                 plurality_str = "jobs are"
-            msg = str(num_jobs) + " " + plurality_str + " listed (" + str(len(request_jobs)) + " requested; " + str(len(avail_jobs)) + " available)"
+            msg = str(num_jobs) + " " + plurality_str + " listed (" + job_info_str + ")"
             title = "check_for_jobs"
             notify_all(msg, title)
 
