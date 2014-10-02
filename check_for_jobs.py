@@ -97,6 +97,7 @@ def main():
         print "Need to enter a SITE_URL to use this script"
 
     br = mechanize.Browser()
+    br.set_all_readonly(False)
     br.set_handle_robots(False)
     br.set_handle_refresh(False)
 
@@ -163,6 +164,15 @@ def main():
             msg = str(num_jobs) + " " + plurality_str + " listed (" + job_info_str + ")"
             title = "check_for_jobs"
             notify_all(msg, title)
+
+            # Attempt to get the html for the confirmation screen
+            if len(avail_jobs) > 0:
+                control = br.form.find_control("JobID")
+                control.value = str(avail_jobs[0].job_id)
+                confirm_response = br.submit()
+                confirm_response_html = confirm_response.read()
+                with open(t + ".confirm.log", 'w') as fout:
+                    fout.write(confirm_response_html)
 
         except Exception, e:
             print str(datetime.datetime.now()) + " Exception occurred: " + str(e)
