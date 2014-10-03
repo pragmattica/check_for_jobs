@@ -97,7 +97,6 @@ def main():
         print "Need to enter a SITE_URL to use this script"
 
     br = mechanize.Browser()
-    br.set_all_readonly(False)
     br.set_handle_robots(False)
     br.set_handle_refresh(False)
 
@@ -167,7 +166,9 @@ def main():
 
             # Attempt to get the html for the confirmation screen
             if len(avail_jobs) > 0:
+                br.select_form("SubAvailSelectForm")
                 control = br.form.find_control("JobID")
+                control.readonly = False
                 control.value = str(avail_jobs[0].job_id)
                 confirm_response = br.submit()
                 confirm_response_html = confirm_response.read()
