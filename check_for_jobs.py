@@ -4,12 +4,7 @@ from pytz import timezone
 
 from bs4 import BeautifulSoup
 
-USERNAME = ""
-PASSWORD = ""
-SITE_URL = ""
-TO_NOTIFY = [""]
-
-FULL_DAY_JOB_HOURS = 5 # To qualify as a 'full-day' job, the duration must be AT LEAST this many hours
+import check_for_jobs_config as config
 
 
 class Job(object):
@@ -87,13 +82,13 @@ def parse_jobs(avail_response_html):
                 return ([], avail_list)
 
 def notify_all(msg, title):
-    for n in TO_NOTIFY:
+    for n in config.TO_NOTIFY:
         params = ["ssh", n, "osascript -e 'display notification \"" + msg + "\" with title \"" + title + "\" sound name \"Submarine\"'"]
         subprocess.call(params)
     print str(datetime.datetime.now()) + " Sent notification '" + msg + "' with title '" + title + "'"
 
 def main():
-    if SITE_URL == "":
+    if config.SITE_URL == "":
         print "Need to enter a SITE_URL to use this script"
 
     br = mechanize.Browser()
@@ -101,15 +96,15 @@ def main():
     br.set_handle_refresh(False)
 
     # Open the site and log in
-    response = br.open(SITE_URL + "/wc2/default.aspx")
+    response = br.open(config.SITE_URL + "/wc2/default.aspx")
 
     br.select_form("WCHtmlForm1")
 
     ucontrol = br.form.find_control("UserName")
-    ucontrol.value = USERNAME
+    ucontrol.value = config.USERNAME
 
     pcontrol = br.form.find_control("Password")
-    pcontrol.value = PASSWORD
+    pcontrol.value = config.PASSWORD
 
     login_response = br.submit()
     login_response_html = login_response.read()
@@ -118,16 +113,16 @@ def main():
     # frames won't be examined, but they are retrieved anyway just
     # to make this script look more like a web-browser and less like
     # a bot)
-    title_response = br.open(SITE_URL + "/wc2/title.aspx")
+    title_response = br.open(config.SITE_URL + "/wc2/title.aspx")
     title_response_html = title_response.read()
 
-    message_response = br.open(SITE_URL + "/wc2/common/Message.aspx")
+    message_response = br.open(config.SITE_URL + "/wc2/common/Message.aspx")
     message_response_html = message_response.read()
 
-    menu_response = br.open(SITE_URL + "/wc2/sub/SubOptions.aspx")
+    menu_response = br.open(config.SITE_URL + "/wc2/sub/SubOptions.aspx")
     menu_response_html = menu_response.read()
 
-    avail_response = br.open(SITE_URL + "/wc2/sub/SubAvailableJobs.aspx")
+    avail_response = br.open(config.SITE_URL + "/wc2/sub/SubAvailableJobs.aspx")
     avail_response_html = avail_response.read()
 
     if os.path.isfile("/tmp/check_for_jobs_send_alive.tmp"):
@@ -149,10 +144,10 @@ def main():
             num_jobs = len(request_jobs) + len(avail_jobs)
             job_info_list = []
             for job_obj in request_jobs:
-                job_len = "full day" if job_obj.num_hours >= FULL_DAY_JOB_HOURS else "half day"
+                job_len = "full day" if job_obj.num_hours >= config.FULL_DAY_JOB_HOURS else "half day"
                 job_info_list.append("job ID " + str(job_obj.job_id) + ": " + job_len + " requested")
             for job_obj in avail_jobs:
-                job_len = "full day" if job_obj.num_hours >= FULL_DAY_JOB_HOURS else "half day"
+                job_len = "full day" if job_obj.num_hours >= config.FULL_DAY_JOB_HOURS else "half day"
                 job_info_list.append("job ID " + str(job_obj.job_id) + ": " + job_len)
             job_info_str = ",".join(job_info_list)
 
@@ -180,7 +175,7 @@ def main():
 
     # Now that we've finished using the web application, it seems polite
     # to log out
-    logout_response = br.open(SITE_URL + "/wc2/Login/LOGOUT.aspx")
+    logout_response = br.open(config.SITE_URL + "/wc2/Login/LOGOUT.aspx")
     logout_response_html = logout_response.read()
 
 
