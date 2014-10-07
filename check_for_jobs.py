@@ -21,7 +21,7 @@ class Job(object):
 
     def parse_job_id_str(self, job_id_str):
         start_str = "if(CanSubmitSelection){ CanSubmitSelection=false; SubAvailSelect_onclick("
-        end_str = ");}"
+        end_str = ", 0);}"
         assert(job_id_str.startswith(start_str))
         assert(job_id_str.endswith(end_str))
         job_number_str = job_id_str[len(start_str):-len(end_str)]
@@ -165,6 +165,9 @@ def main():
                 control = br.form.find_control("JobID")
                 control.readonly = False
                 control.value = str(avail_jobs[0].job_id)
+                control2 = br.form.find_control("UsePriorityList")
+                control2.readonly = False
+                control2.value = str(0)
                 confirm_response = br.submit()
                 confirm_response_html = confirm_response.read()
                 with open(t + ".confirm.log", 'w') as fout:
